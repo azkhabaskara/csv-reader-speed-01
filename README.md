@@ -43,12 +43,28 @@ One left-to-right pass, no character-by-character loop:
 - Gate: 6/6 cases identical to csv-reader 1.0.0
   (`grade-local`, process driver: `cases_passed: 6, passed: 1`).
 - Determinism: repeated executions produce byte-identical
-  `answers.json`.
-- Speed, measured on this VM (Node 24, 1.5 shared CPUs, practice set):
-  parse-only median about 140 ms per set against about 450 ms for the
-  house baseline; end-to-end driver median about 0.84 s against about
-  1.60 s for the baseline driver. Numbers vary with VM load; see the
-  build report for the measurement conditions.
+  `answers.json` (grade-local: "L1 regrade reproduced byte for byte");
+  the driver's `answers.json` is also byte-identical to the house
+  baseline driver's output on the same input.
+- Speed, measured on this VM (Node 24.22.1, 1.5 shared CPUs, practice
+  set, quiet window, load average 0.2–0.8). The number depends on what
+  is counted, so all four are reported honestly:
+  - Parse only, steady state (warm-up + 11 rounds in one process,
+    `--no-incremental-marking`, CPU time): baseline median 749 ms,
+    this entry 196 ms, about 3.8x. Wall medians 531 ms vs 143 ms,
+    about 3.7x.
+  - Parse only, fresh process per pass (includes JIT and the
+    `cases.json` parse, no answer stringify): baseline median
+    968 ms CPU, this entry 501 ms CPU, about 1.9x.
+  - Whole driver end to end (fresh `node main.ts`, includes JSON
+    parse and stringify): baseline median 1.60 s wall, this entry
+    1.01 s wall, about 1.6x.
+  - The harness times CPU net of a do-nothing control, which removes
+    the shared fixed costs (startup, JSON parse/stringify). The
+    harness figure is therefore expected between the fresh-process
+    and steady-state numbers, most plausibly about 2.5–3.1x. The
+    rank-1 claim of 3.6x is unverified; this entry does not claim
+    to beat it.
 
 ## License
 
